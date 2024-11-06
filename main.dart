@@ -1,148 +1,114 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(ProductApp());
+  runApp(MyApp());
 }
 
-// Ürün Modeli
-class Product {
-  final String name;
-  final double price;
-
-  Product({required this.name, required this.price});
-}
-
-// Örnek ürün listesi
-List<Product> products = [
-  Product(name: 'Laptop', price: 1500),
-  Product(name: 'Telefon', price: 800),
-  Product(name: 'Tablet', price: 500),
-  Product(name: 'Kamera', price: 300),
-  Product(name: 'Kulaklık', price: 100),
-  // Daha fazla ürün ekleyebilirsiniz
-];
-
-// Ana Uygulama Widget’ı
-class ProductApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Ürün Listesi',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: ProductScreen(),
+      title: 'Form Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: SignUpForm(),
     );
   }
 }
 
-// Ürün Sayfası için StatefulWidget
-class ProductScreen extends StatefulWidget {
+class SignUpForm extends StatefulWidget {
   @override
-  _ProductScreenState createState() => _ProductScreenState();
+  _SignUpFormState createState() => _SignUpFormState();
 }
 
-class _ProductScreenState extends State<ProductScreen> {
-  int selectedIndex = -1; // Başlangıçta hiçbir ürün seçilmemiş
+class _SignUpFormState extends State<SignUpForm> {
+  // Form'un anahtarını tanımlıyoruz
+  final _formKey = GlobalKey<FormState>();
+
+  // TextController'lar ile kullanıcının girdiği verileri alacağız
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Formu kontrol etme fonksiyonu
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      // Eğer form geçerliyse, bilgileri işleyebiliriz
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Form başarıyla gönderildi')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ürün Listesi'),
+        title: Text('Kayıt Formu'),
       ),
-      body: Column(
-        children: [
-          _buildHorizontalListView(),
-          Expanded(child: _buildGridView()),
-        ],
-      ),
-    );
-  }
-
-  // Horizontal ListView Oluşturma
-  Widget _buildHorizontalListView() {
-    return Container(
-      height: 100,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                selectedIndex = index;
-              });
-            },
-            child: Container(
-              margin: EdgeInsets.all(8),
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: selectedIndex == index ? Colors.blue : Colors.grey[300],
-                borderRadius: BorderRadius.circular(8),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              // İsim alanı
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(labelText: 'İsim'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'İsim alanı boş olamaz';
+                  }
+                  return null;
+                },
               ),
-              child: Center(
-                child: Text(
-                  products[index].name,
-                  style: TextStyle(
-                    color: selectedIndex == index ? Colors.white : Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              SizedBox(height: 16),
+              // E-posta alanı
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: 'E-posta'),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'E-posta alanı boş olamaz';
+                  }
+                  // E-posta geçerliliği kontrolü
+                  final emailRegExp = RegExp(
+                      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                  if (!emailRegExp.hasMatch(value)) {
+                    return 'Geçerli bir e-posta adresi girin';
+                  }
+                  return null;
+                },
               ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // GridView Oluşturma
-  Widget _buildGridView() {
-    return GridView.builder(
-      padding: EdgeInsets.all(8),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // Her satırda iki öğe
-        childAspectRatio: 2, // Öğe oranı
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-      ),
-      itemCount: products.length,
-      itemBuilder: (context, index) {
-        return InkWell(
-          onTap: () {
-            setState(() {
-              selectedIndex = index;
-            });
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: selectedIndex == index
-                  ? Colors.orange[200]
-                  : Colors.grey[200],
-              border: Border.all(
-                color:
-                    selectedIndex == index ? Colors.orange : Colors.transparent,
-                width: 2,
+              SizedBox(height: 16),
+              // Şifre alanı
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(labelText: 'Şifre'),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Şifre alanı boş olamaz';
+                  }
+                  if (value.length < 6) {
+                    return 'Şifre en az 6 karakter olmalıdır';
+                  }
+                  return null;
+                },
               ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: EdgeInsets.all(8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  products[index].name,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  '\$${products[index].price.toString()}',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                ),
-              ],
-            ),
+              SizedBox(height: 20),
+              // Formu gönderme butonu
+              ElevatedButton(
+                onPressed: _submitForm,
+                child: Text('Kaydol'),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
